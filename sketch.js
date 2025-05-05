@@ -6,6 +6,8 @@ let handPose;
 let hands = [];
 let circleX, circleY;
 let circleRadius = 50; // Radius of the circle (half of width/height)
+let isDragging = false; // Flag to track if the circle is being dragged
+let previousX, previousY; // To store the previous position of the index finger
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -43,6 +45,8 @@ function draw() {
 
   // Ensure at least one hand is detected
   if (hands.length > 0) {
+    let fingerMoved = false; // Track if the finger is moving the circle
+
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
         // Loop through keypoints and draw circles
@@ -67,8 +71,27 @@ function draw() {
 
           if (distanceToCircle < circleRadius) {
             // Move the circle to follow the index finger
+            if (!isDragging) {
+              // Start dragging
+              isDragging = true;
+              previousX = indexFinger.x;
+              previousY = indexFinger.y;
+            }
+
+            // Draw the trajectory
+            stroke(255, 0, 0); // Red color for the trajectory
+            strokeWeight(2);
+            line(previousX, previousY, indexFinger.x, indexFinger.y);
+
+            // Update the circle position
             circleX = indexFinger.x;
             circleY = indexFinger.y;
+
+            // Update the previous position
+            previousX = indexFinger.x;
+            previousY = indexFinger.y;
+
+            fingerMoved = true;
           }
         }
 
@@ -88,6 +111,11 @@ function draw() {
           }
         }
       }
+    }
+
+    // If the finger is no longer touching the circle, stop dragging
+    if (!fingerMoved) {
+      isDragging = false;
     }
   }
 }
