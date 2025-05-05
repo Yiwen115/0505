@@ -8,6 +8,7 @@ let circleX, circleY;
 let circleRadius = 50; // Radius of the circle (half of width/height)
 let isDragging = false; // Flag to track if the circle is being dragged
 let previousX, previousY; // To store the previous position of the index finger
+let trajectory = []; // Array to store the trajectory points
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -38,6 +39,16 @@ function setup() {
 function draw() {
   image(video, 0, 0);
 
+  // Draw the stored trajectory
+  stroke(255, 0, 0); // Red color for the trajectory
+  strokeWeight(10); // Set line thickness to 10
+  noFill();
+  beginShape();
+  for (let point of trajectory) {
+    vertex(point.x, point.y);
+  }
+  endShape();
+
   // Draw the circle
   fill(0, 255, 0);
   noStroke();
@@ -49,21 +60,6 @@ function draw() {
 
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
-        // Loop through keypoints and draw circles
-        for (let i = 0; i < hand.keypoints.length; i++) {
-          let keypoint = hand.keypoints[i];
-
-          // Color-code based on left or right hand
-          if (hand.handedness == "Left") {
-            fill(255, 0, 255);
-          } else {
-            fill(255, 255, 0);
-          }
-
-          noStroke();
-          circle(keypoint.x, keypoint.y, 16);
-        }
-
         // Check if index finger (keypoint 8) touches the circle
         if (hand.keypoints.length > 8) {
           let indexFinger = hand.keypoints[8];
@@ -78,10 +74,8 @@ function draw() {
               previousY = indexFinger.y;
             }
 
-            // Draw the trajectory
-            stroke(255, 0, 0); // Red color for the trajectory
-            strokeWeight(2);
-            line(previousX, previousY, indexFinger.x, indexFinger.y);
+            // Add the current position to the trajectory
+            trajectory.push({ x: indexFinger.x, y: indexFinger.y });
 
             // Update the circle position
             circleX = indexFinger.x;
@@ -92,22 +86,6 @@ function draw() {
             previousY = indexFinger.y;
 
             fingerMoved = true;
-          }
-        }
-
-        // Connect keypoints 0 to 4 with lines
-        if (hand.keypoints.length > 4) {
-          strokeWeight(2);
-          if (hand.handedness == "Left") {
-            stroke(255, 0, 255); // Left hand color
-          } else {
-            stroke(255, 255, 0); // Right hand color
-          }
-
-          for (let i = 0; i < 4; i++) {
-            let kp1 = hand.keypoints[i];
-            let kp2 = hand.keypoints[i + 1];
-            line(kp1.x, kp1.y, kp2.x, kp2.y);
           }
         }
       }
