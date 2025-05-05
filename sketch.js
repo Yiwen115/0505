@@ -4,6 +4,8 @@
 let video;
 let handPose;
 let hands = [];
+let circleX, circleY;
+let circleRadius = 50; // Radius of the circle (half of width/height)
 
 function preload() {
   // Initialize HandPose model with flipped video input
@@ -18,10 +20,14 @@ function gotHands(results) {
   hands = results;
 }
 
+// Initialize the circle position in the center of the canvas
 function setup() {
   createCanvas(640, 480);
   video = createCapture(VIDEO, { flipped: true });
   video.hide();
+
+  circleX = width / 2;
+  circleY = height / 2;
 
   // Start detecting hands
   handPose.detectStart(video, gotHands);
@@ -29,6 +35,11 @@ function setup() {
 
 function draw() {
   image(video, 0, 0);
+
+  // Draw the circle
+  fill(0, 255, 0);
+  noStroke();
+  circle(circleX, circleY, circleRadius * 2);
 
   // Ensure at least one hand is detected
   if (hands.length > 0) {
@@ -47,6 +58,18 @@ function draw() {
 
           noStroke();
           circle(keypoint.x, keypoint.y, 16);
+        }
+
+        // Check if index finger (keypoint 8) touches the circle
+        if (hand.keypoints.length > 8) {
+          let indexFinger = hand.keypoints[8];
+          let distanceToCircle = dist(indexFinger.x, indexFinger.y, circleX, circleY);
+
+          if (distanceToCircle < circleRadius) {
+            // Move the circle to follow the index finger
+            circleX = indexFinger.x;
+            circleY = indexFinger.y;
+          }
         }
 
         // Connect keypoints 0 to 4 with lines
