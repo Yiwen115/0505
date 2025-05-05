@@ -60,10 +60,11 @@ function draw() {
 
     for (let hand of hands) {
       if (hand.confidence > 0.1) {
-        // Check if index finger (keypoint 8) touches the circle
+        // Check if thumb (keypoint 4) touches the circle
         if (hand.keypoints.length > 8) {
+          let thumb = hand.keypoints[4];
           let indexFinger = hand.keypoints[8];
-          let distanceToCircle = dist(indexFinger.x, indexFinger.y, circleX, circleY);
+          let distanceToCircle = dist(thumb.x, thumb.y, circleX, circleY);
 
           if (distanceToCircle < circleRadius) {
             // Move the circle to follow the index finger
@@ -91,9 +92,10 @@ function draw() {
       }
     }
 
-    // If the finger is no longer touching the circle, stop dragging
+    // If the thumb is no longer touching the circle, stop dragging
     if (!fingerMoved) {
       isDragging = false;
     }
   }
 }
+
